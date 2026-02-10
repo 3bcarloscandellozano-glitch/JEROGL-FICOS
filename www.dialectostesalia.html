@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    
+    <!-- Primary Meta Tags -->
+    <title>Dialectos de Tesalia Antigua | Mapa Interactivo de las Tétradas (s. V-IV a.C.)</title>
+    <meta name="title" content="Dialectos de Tesalia Antigua | Mapa Interactivo de las Tétradas">
+    <meta name="description" content="Mapa interactivo de las cuatro tétradas de Tesalia antigua y Perrebia con características dialectales del griego tesalio (Pelasgiótide, Tesaliótide, Histiótide, Ftiótide). Siglos V-IV a.C.">
+    <meta name="keywords" content="Tesalia, dialectos griegos, griego antiguo, Pelasgiótide, Tesaliótide, Histiótide, Ftiótide, Perrebia, lingüística histórica, epigrafía griega">
+    <meta name="author" content="Dialectología Griega Antigua">
+    <meta name="robots" content="index, follow">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Dialectos de Tesalia Antigua | Mapa Interactivo">
+    <meta property="og:description" content="Explora las características dialectales de las cuatro tétradas tesalias y Perrebia con inscripciones epigráficas (s. V-IV a.C.)">
+    <meta property="og:site_name" content="Atlas Dialectológico de Tesalia">
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:title" content="Dialectos de Tesalia Antigua | Mapa Interactivo">
+    <meta property="twitter:description" content="Mapa interactivo de las características dialectales del griego tesalio antiguo">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>📜</text></svg>">
+    
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Georgia', 'Times New Roman', serif;
+            background: #f5f5dc;
+            overflow: hidden;
+        }
+        
+        #map {
+            height: 100vh;
+            width: 100%;
+        }
+        
+        .legend {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            font-size: 14px;
+            border: 2px solid #8b7355;
+        }
+        
+        .legend h4 {
+            margin: 0 0 15px 0;
+            font-size: 18px;
+            color: #5d4037;
+            text-align: center;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin: 8px 0;
+            padding: 5px;
+            border-radius: 5px;
+            transition: background 0.3s;
+            cursor: pointer;
+        }
+        
+        .legend-item:hover {
+            background: rgba(139, 115, 85, 0.1);
+        }
+        
+        .legend-color {
+            width: 24px;
+            height: 24px;
+            margin-right: 10px;
+            border: 2px solid #333;
+            border-radius: 4px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        
+        .legend-text {
+            font-weight: 600;
+            color: #4a4a4a;
+        }
+        
+        .city-popup {
+            font-family: 'Georgia', serif;
+        }
+        
+        .city-popup h3 {
+            margin: 0 0 8px 0;
+            color: #5d4037;
+            font-size: 16px;
+            border-bottom: 2px solid #ddd;
+            padding-bottom: 5px;
+        }
+        
+        .city-popup p {
+            margin: 5px 0;
+            font-size: 13px;
+            color: #555;
+        }
+        
+        .city-popup strong {
+            color: #8b7355;
+        }
+        
+        .region-popup {
+            font-family: 'Georgia', serif;
+            max-width: 450px;
+        }
+        
+        .region-popup h3 {
+            margin: 0 0 10px 0;
+            color: #5d4037;
+            font-size: 18px;
+            border-bottom: 2px solid #ddd;
+            padding-bottom: 5px;
+        }
+        
+        .region-popup h4 {
+            margin: 10px 0 5px 0;
+            color: #8b7355;
+            font-size: 14px;
+        }
+        
+        .region-popup ul {
+            margin: 5px 0 10px 20px;
+            font-size: 12px;
+            color: #555;
+            line-height: 1.6;
+        }
+        
+        .region-popup li {
+            margin: 4px 0;
+        }
+        
+        .leaflet-popup-content {
+            min-width: 200px;
+        }
+        
+        .custom-marker {
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .custom-marker:hover {
+            transform: scale(1.3);
+        }
+        
+        .info-box {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            font-size: 13px;
+            max-width: 280px;
+            border: 2px solid #8b7355;
+        }
+        
+        .info-box h4 {
+            margin: 0 0 10px 0;
+            color: #5d4037;
+            font-size: 15px;
+        }
+        
+        /* Loading screen */
+        #loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #f5f5dc;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            flex-direction: column;
+        }
+        
+        #loading h2 {
+            color: #5d4037;
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+        
+        #loading p {
+            color: #8b7355;
+            font-size: 14px;
+        }
+        
+        .spinner {
+            border: 4px solid #ddd;
+            border-top: 4px solid #8b7355;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div id="loading">
+        <div class="spinner"></div>
+        <h2>Atlas Dialectológico de Tesalia</h2>
+        <p>Cargando mapa interactivo...</p>
+    </div>
+    
+    <div id="map"></div>
+    
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        // Ocultar pantalla de carga cuando el mapa esté listo
+        window.addEventListener('load', function() {
+            setTimeout(function() {
+                document.getElementById('loading').style.display = 'none';
+            }, 800);
+        });
+        
+        // Inicializar el mapa centrado en Tesalia
+        const map = L.map('map', {
+            center: [39.6, 22.1],
+            zoom: 8.5,
+            minZoom: 8,
+            maxZoom: 13
+        });
+        
+        // Diferentes capas base disponibles
+        const baseLayers = {
+            'Mapa Limpio (recomendado)': L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+                attribution: '© OpenStreetMap contributors © CARTO',
+                subdomains: 'abcd',
+                maxZoom: 19
+            }),
+            'Mapa Terreno': L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', {
+                attribution: 'Tiles © Esri',
+                maxZoom: 16
+            }),
+            'Mapa Topográfico': L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors, © OpenTopoMap',
+                maxZoom: 17
+            }),
+            'Mapa Estándar': L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors',
+                maxZoom: 19
+            })
+        };
+        
+        // Añadir capa base por defecto (Mapa Limpio)
+        baseLayers['Mapa Limpio (recomendado)'].addTo(map);
+        
+        // Control de capas
+        L.control.layers(baseLayers, null, { position: 'topleft' }).addTo(map);
+        
+        // Colores para las 4 tétradas + Perrebia
+        const colors = {
+            'Perrebia': '#9B59B6',          // Púrpura
+            'Pelasgiótide': '#E74C3C',      // Rojo
+            'Tesaliótide': '#3498DB',       // Azul
+            'Histiótide': '#2ECC71',        // Verde
+            'Ftiótide': '#F39C12'           // Naranja
+        };
+        
+        // Información dialectal de cada región
+        const dialectInfo = {
+            'Pelasgiótide': {
+                title: 'Pelasgiótide',
+                greek: 'Πελασγιῶτις',
+                description: 'Características dialectales principales:',
+                features: [
+                    '<strong>Partícula modal κε e interrogativo indefinido κις:</strong> κίνι κε θ[ε]õν (1433A.2, 450-400 a.C.), κίνι [κε θεõν] (2761B.3, s. V a.C.), κί̣νι κε θ[εõν] (3545B.1, finales s. V a.C.), κιννί κε θεῶν (556A.6, finales s. IV a.C.)',
+                    '<strong>Nominativo plural οἱ</strong> (tesalio occidental οἱ / τοί): οἱ συγγενέες, οἱ πατέρες (556A.2, 4-5, finales s. IV a.C.)',
+                    '<strong>Genitivo temático en -οι(ο):</strong> τοῖ ἱαροῖο τοῖ ἐμπέδο̣ι̣ (1465A.1, finales s. V a.C.), τοῖ κατ{ε}ιγνείτοιο y γάμοιο (3113A.8, 10, principios s. IV a.C.), πὲρ τοῖ ἀρρωστε̄́ματος (556A.3, finales s. IV a.C.), πὲρ το‹ῖ› [ἀρ]γύρροι (LOD 8B.1-2, finales s. III - principios s. II a.C.)',
+                    '<strong>αι > ει en terminaciones verbales:</strong> infinitivo ὀρύξξειν (= ático ὀρύξαι) (159A.2, finales s. V - principios s. IV a.C.), posiblemente subjuntivo presente medio 1ª sg. ἄγο̄μει (= ático ἄγωμαι) (LOD 34, ca. 400 a.C.)'
+                ]
+            },
+            'Tesaliótide': {
+                title: 'Tesaliótide',
+                greek: 'Θεσσαλιῶτις',
+                description: 'Características dialectales principales:',
+                features: [
+                    '<strong>Partícula modal κε e interrogativo indefinido τις:</strong> τίνι κε θεῶ[ν] (18Β.1, s. V-IV a.C.), τίνα κε θεῶν (992A.2, 350-300 a.C.), τίννι κε θε̣[οῦν] (1134A.2, 400-350 a.C.), πο͂ς κε ἐκ Μελιτείας σωθῆ, τίνι θεῶν (2024A.3, 4, 400-350 a.C.)',
+                    '<strong>Genitivo temático en -ου:</strong> Προξένου (2024A.1-2, 400-350 a.C.)'
+                ]
+            },
+            'Histiótide': {
+                title: 'Histiótide',
+                greek: 'Ἱστιαιῶτις',
+                description: 'Características dialectales principales:',
+                features: [
+                    '<strong>Partícula modal κα e interrogativo indefinido τις:</strong> αἴ κα μὰ ἔχο̄ (17B, s. V-IV a.C.), [τί]νι κα θεοῦν (3687A, principios s. IV a.C.), πράσσοι κα (217Α.4, Histiaeotis?, mediados s. IV a.C.), αἴ κα διδοῖν (191A.3, mediados s. IV a.C.)',
+                    '<strong>Negativo μᾱ́ por μή:</strong> μὰ πράξ̣αι (1988B, s. IV a.C.). Menos seguro: αἴ κα μὰ ἔχο̄ (17B, s. V-IV a.C.), αἰ δὲ μὰ [---], 2985A (finales s. V - principios s. IV a.C.), αἴτε μά (3205A.1, 400-350 a.C.)',
+                    '<strong>Cambio /o/ > /e/ tras dentales y palatales en sílabas finales</strong> (el shibbólet más distintivo de Histiótide): ἀπεδείξατε por ἀπεδείξατο (< *-sn̥to; ático ἀπεδείξαντο) (1351A.3, 500-450 a.C.), ὕδατ̣ες por ὕδατος (3007A.1, finales s. V a.C.), Δουδωναίει por Δωδωναίοι (2204A.2, finales s. V a.C.), πα‹ι›δίε‹ι›ν por παιδίοιν (2015B.2, 400-350 a.C.), σύμ̣φ̣ορεν por σύμφορον (191A.1, mediados s. IV a.C.), δυνατέν por δυνατόν (3042, mediados s. IV a.C.)',
+                    '<strong>Psilosis de ὥσπερ:</strong> ō῎σπερ πρõτας (1351A.2-3, 500-450 a.C.). También nominativo del artículo οἱ en 556A.2, 4-5 (finales s. IV a.C.), aunque h- se ignora en el alfabeto ático adaptado',
+                    '<strong>Optativo 3ª pl. διδοῖν</strong> (= ático διδοῖεν) (191A, mediados s. IV a.C.) con terminación -οιν típica de dialectos del noroeste. Cf. también δοῖν por δοῖεν en SEG 36, 548.7 (Matrópolis, finales s. III a.C.)',
+                    '<strong>Infinitivo aoristo en -σαι</strong> (πράξ̣αι, 1988B, s. IV a.C.) frente a -σειν en Larisa'
+                ]
+            }
+        };
+        
+        // Polígonos de las regiones
+        const regions = {
+            'Perrebia': [
+                [40.4, 21.4],    [40.4, 21.8],    [40.4, 22.4],    [40.1, 22.6],
+                [39.85, 22.4],   [39.85, 22.0],   [39.85, 21.7],   [40.0, 21.4],
+                [40.4, 21.4]
+            ],
+            'Pelasgiótide': [
+                [39.85, 22.0],   [39.85, 22.4],   [40.1, 22.6],    [39.8, 23.05],
+                [39.55, 23.05],  [39.35, 23.05],  [39.32, 22.85],  [39.32, 22.65],
+                [39.35, 22.5],   [39.4, 22.35],   [39.48, 22.2],   [39.55, 22.05],
+                [39.65, 21.95],  [39.85, 22.0]
+            ],
+            'Histiótide': [
+                [40.0, 21.25],   [40.0, 21.4],    [39.85, 21.7],   [39.85, 22.0],
+                [39.65, 21.95],  [39.55, 22.0],   [39.48, 22.05],  [39.4, 21.95],
+                [39.3, 21.8],    [39.25, 21.65],  [39.28, 21.45],  [39.35, 21.3],
+                [39.5, 21.25],   [39.7, 21.25],   [40.0, 21.25]
+            ],
+            'Tesaliótide': [
+                [39.65, 21.95],  [39.55, 22.05],  [39.48, 22.2],   [39.4, 22.35],
+                [39.35, 22.45],  [39.28, 22.42],  [39.2, 22.35],   [39.1, 22.25],
+                [39.05, 22.1],   [39.1, 21.95],   [39.18, 21.8],   [39.25, 21.65],
+                [39.3, 21.8],    [39.4, 21.95],   [39.48, 22.05],  [39.55, 22.0],
+                [39.65, 21.95]
+            ],
+            'Ftiótide': [
+                [39.35, 22.45],  [39.35, 22.5],   [39.32, 22.65],  [39.32, 22.85],
+                [39.35, 23.05],  [39.2, 23.05],   [39.05, 23.05],  [38.85, 23.05],
+                [38.7, 22.95],   [38.7, 22.7],    [38.7, 22.4],    [38.75, 22.2],
+                [38.85, 22.0],   [38.95, 21.88],  [39.05, 22.1],   [39.1, 22.25],
+                [39.2, 22.35],   [39.28, 22.42],  [39.35, 22.45]
+            ]
+        };
+        
+        // Dibujar las regiones con polígonos
+        Object.keys(regions).forEach(regionName => {
+            const polygon = L.polygon(regions[regionName], {
+                color: colors[regionName],
+                fillColor: colors[regionName],
+                fillOpacity: 0.25,
+                weight: 3,
+                opacity: 0.8,
+                smoothFactor: 1.5
+            }).addTo(map);
+            
+            // Popup con información dialectal solo para las 3 tétradas
+            if (dialectInfo[regionName]) {
+                const info = dialectInfo[regionName];
+                polygon.bindPopup(`
+                    <div class="region-popup">
+                        <h3 style="color: ${colors[regionName]};">${info.title}</h3>
+                        <p style="font-style: italic; color: #888; font-size: 13px;">${info.greek}</p>
+                        <p style="margin: 10px 0 5px 0;">${info.description}</p>
+                        <ul>
+                            ${info.features.map(feature => `<li>${feature}</li>`).join('')}
+                        </ul>
+                    </div>
+                `);
+            } else {
+                // Para Perrebia y Ftiótide, popup simple con solo el nombre
+                polygon.bindPopup(`
+                    <div style="text-align: center;">
+                        <h3 style="color: ${colors[regionName]}; margin: 0;">${regionName}</h3>
+                    </div>
+                `);
+            }
+            
+            // Tooltip al pasar el ratón
+            polygon.bindTooltip(regionName, {
+                permanent: false,
+                direction: 'center',
+                className: 'region-tooltip',
+                opacity: 0.9
+            });
+        });
+        
+        // Base de datos de ciudades
+        const cities = [
+            { 
+                name: 'Farkadon', 
+                nameGreek: 'Φαρκαδών',
+                lat: 39.583, 
+                lng: 22.067, 
+                region: 'Pelasgiótide', 
+                info: 'Ciudad de Pelasgiótide situada en la llanura tesalia, a medio camino entre Tríkala y Larisa. La antigua ciudad estaba cerca de Klokoto. Capturada por Filipo II de Macedonia en 357 a.C.',
+                importance: 'major'
+            },
+            { 
+                name: 'Tetonio', 
+                nameGreek: 'Θητώνιον',
+                lat: 39.3203, 
+                lng: 22.2072, 
+                region: 'Tesaliótide', 
+                info: 'Ciudad de Tesaliótide mencionada en una inscripción del 450-425 a.C., la más antigua donde se menciona el título de tagos de Tesalia. Cerca de Gefiria moderna.',
+                importance: 'minor'
+            },
+            { 
+                name: 'Trícala', 
+                nameGreek: 'Τρίκκα / Τρίκκη',
+                lat: 39.5549, 
+                lng: 21.7684, 
+                region: 'Histiótide', 
+                info: 'Ciudad principal de Histiótide. Centro del culto a Asclepio. Mencionada en la Ilíada como patria de dos hijos de Asclepio. Moderna Tríkala.',
+                importance: 'capital'
+            },
+            { 
+                name: 'Elimeia', 
+                nameGreek: 'Ἐλίμεια',
+                lat: 40.22, 
+                lng: 21.84, 
+                region: 'Perrebia', 
+                info: 'Región de Perrebia fronteriza con Macedonia, en las montañas del Pindo. Regada por el río Haliakmon. Capital en Aiani.',
+                importance: 'minor'
+            },
+            { 
+                name: 'Feras', 
+                nameGreek: 'Φεραί',
+                lat: 39.379, 
+                lng: 22.7539, 
+                region: 'Pelasgiótide', 
+                info: 'Ciudad importante cerca del lago Bebeida. Hogar de los tiranos Jasón, Alejandro y Licofrón. En la mitología, patria del rey Admeto. Actual Velestino.',
+                importance: 'major'
+            },
+            { 
+                name: 'Egino', 
+                nameGreek: 'Ἐχῖνος',
+                lat: 38.8958, 
+                lng: 22.7254, 
+                region: 'Ftiótide', 
+                info: 'Ciudad de Ftiótide o Malis situada en el golfo Malíaco, entre Lamia y Larisa Cremaste. Filipo II la tomó de los tebanos en 342 a.C. Moderna Achinos.',
+                importance: 'major'
+            },
+            { 
+                name: 'Mondaia', 
+                nameGreek: 'Μονδαία',
+                lat: 39.91, 
+                lng: 22.20, 
+                region: 'Perrebia', 
+                info: 'Ciudad de Perrebia cerca del monte Olimpo y valle del Tempe. Aparece en inscripciones del 375-350 a.C. ofreciendo dedicatoria a Apolo Pitio. Cerca de Loutro Elassonos.',
+                importance: 'minor'
+            }
+        ];
+        
+        // Función para crear iconos personalizados
+        const createIcon = (color, importance) => {
+            const sizes = {
+                'capital': 14,
+                'major': 12,
+                'minor': 10
+            };
+            const size = sizes[importance] || 10;
+            
+            return L.divIcon({
+                className: 'custom-marker',
+                html: `<div style="
+                    background-color: ${color}; 
+                    width: ${size}px; 
+                    height: ${size}px; 
+                    border-radius: 50%; 
+                    border: 2px solid #333;
+                    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+                "></div>`,
+                iconSize: [size + 4, size + 4],
+                iconAnchor: [(size + 4) / 2, (size + 4) / 2]
+            });
+        };
+        
+        // Añadir marcadores de ciudades
+        cities.forEach(city => {
+            const marker = L.marker([city.lat, city.lng], {
+                icon: createIcon(colors[city.region], city.importance)
+            }).addTo(map);
+            
+            marker.bindPopup(`
+                <div class="city-popup">
+                    <h3>${city.name}</h3>
+                    <p style="font-style: italic; color: #888; font-size: 12px;">${city.nameGreek}</p>
+                    <p><strong>Región:</strong> ${city.region}</p>
+                    <p style="margin-top: 8px;">${city.info}</p>
+                </div>
+            `);
+            
+            marker.bindTooltip(city.name, {
+                permanent: false,
+                direction: 'top',
+                offset: [0, -10],
+                className: 'city-label',
+                opacity: 0.9
+            });
+        });
+        
+        // Añadir leyenda
+        const legend = L.control({ position: 'topright' });
+        
+        legend.onAdd = function(map) {
+            const div = L.DomUtil.create('div', 'legend');
+            div.innerHTML = '<h4>Regiones de Tesalia</h4>';
+            
+            div.innerHTML += `
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: ${colors['Perrebia']}"></div>
+                    <span class="legend-text">Perrebia</span>
+                </div>
+                <hr style="margin: 5px 0; border-color: #ccc;">
+                <p style="font-size: 11px; color: #666; margin: 5px 0; text-align: center;">Las Cuatro Tétradas:</p>
+            `;
+            
+            ['Pelasgiótide', 'Tesaliótide', 'Histiótide', 'Ftiótide'].forEach(region => {
+                div.innerHTML += `
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: ${colors[region]}"></div>
+                        <span class="legend-text">${region}</span>
+                    </div>
+                `;
+            });
+            
+            div.innerHTML += `
+                <hr style="margin: 10px 0; border-color: #8b7355;">
+                <p style="font-size: 11px; color: #666; text-align: center; margin: 8px 0 0 0;">
+                    Tesalia Antigua (s. V-IV a.C.)<br>
+                    Περραιβία + Τετράδες Θεσσαλίας
+                </p>
+            `;
+            
+            return div;
+        };
+        
+        legend.addTo(map);
+        
+        // Añadir cuadro informativo
+        const info = L.control({ position: 'bottomleft' });
+        
+        info.onAdd = function(map) {
+            const div = L.DomUtil.create('div', 'info-box');
+            div.innerHTML = `
+                <h4>Dialectos de Tesalia</h4>
+                <p style="margin: 8px 0; font-size: 13px; line-height: 1.5;">
+                    <strong>Haz clic en una región para ver sus características dialectales principales.</strong>
+                </p>
+                <p style="margin-top: 10px; font-size: 11px; color: #888;">
+                    Pasa el ratón sobre las ciudades o regiones para ver sus nombres.<br>
+                    Usa el selector arriba-izquierda para cambiar el estilo del mapa.
+                </p>
+            `;
+            return div;
+        };
+        
+        info.addTo(map);
+    </script>
+</body>
+</html>
